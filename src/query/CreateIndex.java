@@ -20,7 +20,7 @@ class CreateIndex implements Plan {
 
   protected String ixTable;
 
-  protected String ixColumn;
+  protected String ixCol;
 
   protected Schema schema;
 
@@ -36,11 +36,16 @@ class CreateIndex implements Plan {
     ixCol = tree.getIxColumn();
 
     QueryCheck.fileNotExists(fileName);
-    schema = Minibase.SystemCatalog.getSchema(fileName);
-
     QueryCheck.tableExists(ixTable);
+
+    /* Note from Matt: do we get the schema from the fileName or Ixtable?
+     * as I understand it the fileName doesn't refer to anything until 
+     * after we create the index
+     * */
+    schema = Minibase.SystemCatalog.getSchema(ixTable);
+
     QueryCheck.columnExists(schema, ixCol);
-    }
+    
 
   } // public CreateIndex(AST_CreateIndex tree) throws QueryException
 
@@ -51,16 +56,16 @@ class CreateIndex implements Plan {
 
     HashIndex index = new HashIndex(fileName);
     HeapFile heap = new HeapFile(ixTable);
-    HeapScan scan = new HeapScan(heap);
+    HeapScan scan = heap.openScan();
 
     RID rid = new RID();
     while(scan.hasNext()) {
       Tuple tup = new Tuple(schema, scan.getNext(rid));
-      scan.insertEntry(new SearchKey(tup.getField(ixCol)), rid);
+      index.insertEntry(new SearchKey(tup.getField(ixCol)), rid);
     }
     scan.close();
 
-    Minibase.SystemCatalog.createIndex(index);
+    Minibase.SystemCatalog.createIndex(fileName, ixTable, ixCol);
 
     // print the output message
     System.out.println("Index created");
