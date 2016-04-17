@@ -62,7 +62,12 @@ class Insert implements Plan {
     }
 
     // print the output message
-    System.out.println("1 rows affected.");
+    String toPrint = "";
+    for (int i = 0; i < schema.getCount(); i++) {
+      toPrint = toPrint + schema.fieldName(i) + ":" + values[i].toString() +", ";
+    }
+    toPrint = toPrint.substring(0, toPrint.length() - 2);
+    System.out.println("Inserted " + toPrint);
 
   } // public void execute()
 
