@@ -44,7 +44,6 @@ class Update implements Plan {
 
     //open filescan (for updating)
     this.heap = new HeapFile(this.fileName);
-    this.fs = new FileScan(this.schema, this.heap);
     
   } // public Update(AST_Update tree) throws QueryException
 
@@ -57,6 +56,9 @@ class Update implements Plan {
     boolean pass = false;;
     RID rid;
     String toPrint = "";
+    
+    fs = new FileScan(schema, heap);
+    
     //update tuples
     while (fs.hasNext()) {
       tuple = fs.getNext();

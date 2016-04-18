@@ -36,6 +36,7 @@ class CreateIndex implements Plan {
     ixCol = tree.getIxColumn();
 
     QueryCheck.fileNotExists(fileName);
+
     QueryCheck.tableExists(ixTable);
 
     /* Note from Matt: do we get the schema from the fileName or Ixtable?

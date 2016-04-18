@@ -36,11 +36,16 @@ class Describe implements Plan {
       names.add(schema.fieldName(i));
     }
     // print the output message
+    int length = 0;
     for (int i = 0; i < fieldCount; i++) {
       System.out.printf("(%s) %s | ", types.get(i), names.get(i));
+      length += types.get(i).length();
+      length += names.get(i).length();
+      length += 6;
     }
     System.out.println();
-    System.out.println("---------------------------------------------------");
+    for (int i = 0; i < length; i++) {System.out.printf("-");}
+    System.out.println();
 
   } // public void execute()
 
