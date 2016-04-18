@@ -8,7 +8,7 @@ import relop.Schema;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
-
+import relop.Tuple;
 
 /**
  * Execution plan for inserting tuples.
@@ -44,27 +44,20 @@ class Insert implements Plan {
    */
   public void execute() {
     HeapFile hf = new HeapFile(fileName);
-   
-    //streams for converting Object to Byte[]
-
+    Tuple toInsert = new Tuple(this.schema);
     
-    try {
-      ByteArrayOutputStream bout = new ByteArrayOutputStream();
-      ObjectOutputStream oout = new ObjectOutputStream(bout);
-    
-      for (Object value : values) {
-        oout.writeObject(value);
-      }
-
-      hf.insertRecord(bout.toByteArray());
-    } catch (IOException e) {
-      System.out.println("Error with output streams in Insert");
+    //construct tuple
+    for (int i = 0; i < schema.getCount(); i++) {
+      toInsert.setField(i, values[i]);
     }
+    
+    hf.insertRecord(toInsert.getData());
 
     // print the output message
     String toPrint = "";
+    
     for (int i = 0; i < schema.getCount(); i++) {
-      toPrint = toPrint + schema.fieldName(i) + ":" + values[i].toString() +", ";
+      toPrint = toPrint + schema.fieldName(i) + ":" + toInsert.getField(i).toString() +", ";
     }
     toPrint = toPrint.substring(0, toPrint.length() - 2);
     System.out.println("Inserted " + toPrint);
