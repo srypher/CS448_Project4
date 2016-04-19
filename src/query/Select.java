@@ -9,6 +9,8 @@ import relop.Schema;
 import relop.SimpleJoin;
 import relop.Projection;
 import relop.Selection;
+import global.AttrOperator;
+import global.AttrType;
 
 
 /**
@@ -59,8 +61,11 @@ class Select implements Plan {
     }
     //naive
     Schema bigSchema = new Schema(1);
-    selects = new Selection[predicates.length];
-    
+    if (predicates.length > 0) selects = new Selection[predicates.length];
+    else selects = new Selection[1];
+    Predicate alwaysTrue[] = { new Predicate(AttrOperator.EQ, AttrType.INTEGER, 1, AttrType.INTEGER, 1) };
+
+
     if (heaps.length > 1) {
       //chain joins into into big table
       tableJoins = new SimpleJoin[heaps.length - 1];
@@ -84,7 +89,7 @@ class Select implements Plan {
 	throw e;
       }
       //make first selection
-      selects[0] = new Selection(tableJoins[tableJoins.length - 1], predicates[0]);
+      selects[0] = new Selection(tableJoins[tableJoins.length - 1], (predicates.length < 1) ? alwaysTrue : predicates[0]);
 
     } else if (heaps.length > 0) {
       tableJoins = null;
@@ -103,7 +108,7 @@ class Select implements Plan {
       }
 
       //make first selection
-      selects[0] = new Selection(scans[0], predicates[0]);
+      selects[0] = new Selection(scans[0], (predicates.length < 1) ? alwaysTrue : predicates[0]);
     } else {
       throw new QueryException("No files to select from!");
     }
@@ -139,8 +144,14 @@ class Select implements Plan {
    */
   public void execute() {
     // print the output message
-    if (isExplain) plan.explain(0);
-    else plan.execute(); 
+    if (isExplain) {
+      plan.explain(0);
+      //explain doesnt close anything......
+      for (FileScan scan : scans) scan.close();
+      if ( tableJoins != null ) for (SimpleJoin tableJoin : tableJoins) tableJoin.close();
+      for (Selection select : selects) select.close();
+      plan.close();
+    } else plan.execute();
   } // public void execute()
 
 } // class Select implements Plan

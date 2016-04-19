@@ -7,6 +7,8 @@ import relop.FileScan;
 import relop.Tuple;
 import relop.Predicate;
 import heap.HeapFile;
+import global.AttrOperator;
+import global.AttrType;
 
 
 /**
@@ -44,6 +46,11 @@ class Update implements Plan {
 
     //open filescan (for updating)
     this.heap = new HeapFile(this.fileName);
+
+    if (predicates.length < 1) {
+      predicates = new Predicate[1][1];
+      predicates[0][0] = new Predicate(AttrOperator.EQ, AttrType.INTEGER, 1, AttrType.INTEGER, 1);
+    }
     
   } // public Update(AST_Update tree) throws QueryException
 
