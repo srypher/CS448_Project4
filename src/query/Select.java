@@ -28,6 +28,8 @@ class Select implements Plan {
   protected Selection selects[];
   protected SimpleJoin tableJoins[];
   protected Projection plan;
+
+  protected boolean isExplain;
   /**
    * Optimizes the plan, given the parsed query.
    * 
@@ -35,6 +37,7 @@ class Select implements Plan {
    */
   public Select(AST_Select tree) throws QueryException {
     this.tree = tree;
+    this.isExplain = tree.isExplain;
     tables = tree.getTables();
     columns = tree.getColumns();
     predicates = tree.getPredicates();
@@ -136,7 +139,8 @@ class Select implements Plan {
    */
   public void execute() {
     // print the output message
-    plan.execute(); 
+    if (isExplain) plan.explain(0);
+    else plan.execute(); 
   } // public void execute()
 
 } // class Select implements Plan
